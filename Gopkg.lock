@@ -105,7 +105,7 @@
 
 [[projects]]
   name = "github.com/prometheus/prometheus"
-  packages = ["pkg/labels","pkg/textparse","pkg/timestamp","pkg/value","promql","storage","storage/tsdb","util/stats","util/strutil","util/testutil"]
+  packages = ["pkg/labels","pkg/rulefmt","pkg/textparse","pkg/timestamp","pkg/value","promql","rules","storage","storage/tsdb","template","util/stats","util/strutil","util/testutil"]
   revision = "290d71791a507a5057b9a099c9d48703d86dc941"
   version = "v2.3.0"
 
@@ -133,9 +133,15 @@
   packages = ["unix"]
   revision = "a9e25c09b96b8870693763211309e213c6ef299d"
 
+[[projects]]
+  name = "gopkg.in/yaml.v2"
+  packages = ["."]
+  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
+  version = "v2.2.1"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "eef7135919543e1f2298f22dd29563ee2edea020600effa7a5e22df760c88b65"
+  inputs-digest = "090ff82e7e3bec31d13dcfe388c4e0bd1a4a79b07ab6ef98b31e06b74c42779e"
   solver-name = "gps-cdcl"
   solver-version = 1
