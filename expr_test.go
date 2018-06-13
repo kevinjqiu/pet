@@ -3,51 +3,138 @@ package main
 import (
 	"testing"
 	"os"
+	"log"
 	"fmt"
 	"io/ioutil"
+	"gopkg.in/yaml.v2"
 	"github.com/prometheus/prometheus/promql"
 	"github.com/hashicorp/go-multierror"
-	"log"
+	"strings"
 )
 
-type TestCase struct {
-}
+type StubTestCase struct{}
 
-func (tc TestCase) Fatal(args ...interface{}) {
+func (stc StubTestCase) Fatal(args ...interface{}) {
 	log.Fatal(args)
 }
-
-func (tc TestCase) Fatalf(format string, args ...interface{}) {
+func (stc StubTestCase) Fatalf(format string, args ...interface{}) {
 	log.Fatalf(format, args)
 }
 
-func testPromQL(testFiles []string) {
-	testCase := TestCase{}
+// Fixture is a Prometheus metric
+type Metric string
 
-	var testErrs error
-	for _, file := range testFiles {
-		fmt.Printf("Testing %v...", file)
+// Instant is an instant, e.g., 0m, 1m, 1d, etc
+type Instant string
 
-		content, err := ioutil.ReadFile(file)
+type InstantMetricFixtures map[Instant][]Metric
+
+type ExpressionSource struct {
+	FromFile    string `yaml:"fromFile"`
+	FromLiteral string `yaml:"fromLiteral"`
+}
+
+func (es ExpressionSource) Get() (string, error) {
+	if es.FromFile != "" {
+		result, err := ioutil.ReadFile(es.FromFile)  // TODO(kevinjqiu): cache the result
+
 		if err != nil {
-			log.Fatal(err)
+			return "", err
 		}
-		t, err := promql.NewTest(testCase, string(content))
-		if err != nil {
-			log.Fatal(err)
-		}
-		testErr := t.Run()
-		if testErr != nil {
-			testErrs = multierror.Append(testErrs, testErr)
-			fmt.Print("FAILED\n")
-		} else {
-			fmt.Print("OK\n")
+		return strings.Replace(string(result), "\n", " ", -1), nil
+	}
+	if es.FromLiteral != "" {
+		return es.FromLiteral, nil
+	}
+	return "", nil
+}
+
+type Evaluation struct {
+	At   Instant          `yaml:"at"`
+	Expr ExpressionSource `yaml:"expr"`
+}
+
+type Assertion struct {
+	Eval     Evaluation `yaml:"eval"`
+	Expected []Metric   `yaml:"expected"`
+}
+
+type PromQLExprTestCase struct {
+	Description string                `yaml:"description"`
+	Fixtures    InstantMetricFixtures `yaml:"fixtures"`
+	Assertions  []Assertion           `yaml:"assertions"`
+}
+
+func (pqltc PromQLExprTestCase) generateCommands() (string, error) {
+	lines := []string{}
+
+	lines = append(lines, "clear")
+	for instant, fixtures := range pqltc.Fixtures {
+		lines = append(lines, fmt.Sprintf("load %s", instant))
+		for _, fixture := range fixtures {
+			lines = append(lines, fmt.Sprintf("    %s", fixture))
 		}
 	}
 
-	if testErrs != nil {
-		log.Fatal(testErrs)
+	lines = append(lines, "")
+
+	for _, assertion := range pqltc.Assertions {
+		expr, err := assertion.Eval.Expr.Get()
+		if err != nil {
+			return "", err
+		}
+		lines = append(lines, fmt.Sprintf("eval instant at %s %s", assertion.Eval.At, expr))
+		for _, expectedMetric := range assertion.Expected {
+			lines = append(lines, fmt.Sprintf("    %s", expectedMetric))
+		}
 	}
+
+	return strings.Join(lines, "\n"), nil
+}
+
+func (pqltc PromQLExprTestCase) Run() error {
+	commands, err := pqltc.generateCommands()
+	if err != nil {
+		return err
+	}
+	pt, err := promql.NewTest(StubTestCase{}, commands)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return pt.Run()
+}
+
+type PromQLExprTest struct {
+	Name      string               `yaml:"name"`
+	TestCases []PromQLExprTestCase `yaml:"testCases"`
+}
+
+func (pqltest PromQLExprTest) Run() error {
+	var err error
+
+	for _, tc := range pqltest.TestCases {
+		newErr := tc.Run()
+		if err != nil {
+			err = multierror.Append(err, newErr)
+		}
+	}
+
+	return err
+}
+
+func parsePromQLTestCase(filePath string) (PromQLExprTest, error) {
+	var testCase PromQLExprTest
+
+	content, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return testCase, err
+	}
+
+	err = yaml.UnmarshalStrict(content, &testCase)
+	if err != nil {
+		return testCase, err
+	}
+	return testCase, nil
 }
 
 func TestPromQLExpression(t *testing.T) {
@@ -60,5 +147,28 @@ func TestPromQLExpression(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	testPromQL(filePaths)
+	if len(filePaths) == 0 {
+		log.Println("WARNING: no test files specified")
+		return
+	}
+
+	var testErrs error
+	for _, file := range filePaths {
+		fmt.Printf("Testing %v...", file)
+
+		testCase, err := parsePromQLTestCase(file)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		testErr := testCase.Run()
+
+		if testErr != nil {
+			testErrs = multierror.Append(testErrs, testErr)
+		}
+	}
+
+	if testErrs != nil {
+		log.Fatal(testErrs)
+	}
 }

@@ -1,0 +1,79 @@
+# service in staging has equal amount of replicas_updated and spec_replicas
+clear
+load 1m
+    kube_deployment_status_replicas_updated{deployment="greatservice",namespace="st-great"} 1
+    kube_deployment_spec_replicas{deployment="greatservice",namespace="st-great"} 1
+    kube_deployment_spec_paused{deployment="greatservice",namespace="st-great"} 0
+
+eval instant at 0m ((kube_deployment_status_replicas_updated{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} != kube_deployment_spec_replicas{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"}) or (kube_deployment_status_replicas_available{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} != kube_deployment_spec_replicas{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"})) unless (kube_deployment_spec_paused{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} == 1)
+
+# service in staging has equal amount of replicas_available and spec_replicas
+clear
+load 1m
+    kube_deployment_status_replicas_updated{deployment="greatservice",namespace="st-great"} 5
+    kube_deployment_spec_replicas{deployment="greatservice",namespace="st-great"} 5
+    kube_deployment_spec_paused{deployment="greatservice",namespace="st-great"} 0
+    kube_deployment_status_replicas_available{deployment="greatservice",namespace="st-great"} 5
+
+eval instant at 0m ((kube_deployment_status_replicas_updated{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} != kube_deployment_spec_replicas{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"}) or (kube_deployment_status_replicas_available{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} != kube_deployment_spec_replicas{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"})) unless (kube_deployment_spec_paused{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} == 1)
+
+# service in staging has fewer replicas_updated than spec_replicas
+clear
+load 1m
+    kube_deployment_status_replicas_updated{deployment="greatservice",namespace="st-great"} 3
+    kube_deployment_spec_replicas{deployment="greatservice",namespace="st-great"} 5
+    kube_deployment_spec_paused{deployment="greatservice",namespace="st-great"} 0
+    kube_deployment_status_replicas_updated{deployment="other",namespace="st-great"} 5
+    kube_deployment_spec_replicas{deployment="other",namespace="st-great"} 5
+    kube_deployment_spec_paused{deployment="other",namespace="st-great"} 0
+
+eval instant at 0m ((kube_deployment_status_replicas_updated{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} != kube_deployment_spec_replicas{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"}) or (kube_deployment_status_replicas_available{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} != kube_deployment_spec_replicas{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"})) unless (kube_deployment_spec_paused{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} == 1)
+    kube_deployment_status_replicas_updated{deployment="greatservice",namespace="st-great"} 3
+
+# service in staging has fewer replicas_available than spec_replicas
+clear
+load 1m
+    kube_deployment_spec_replicas{deployment="greatservice",namespace="st-great"} 5
+    kube_deployment_spec_paused{deployment="greatservice",namespace="st-great"} 0
+    kube_deployment_status_replicas_available{deployment="greatservice",namespace="st-great"} 3
+    kube_deployment_status_replicas_updated{deployment="other",namespace="st-great"} 5
+    kube_deployment_spec_replicas{deployment="other",namespace="st-great"} 5
+    kube_deployment_spec_paused{deployment="other",namespace="st-great"} 0
+
+eval instant at 0m ((kube_deployment_status_replicas_updated{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} != kube_deployment_spec_replicas{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"}) or (kube_deployment_status_replicas_available{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} != kube_deployment_spec_replicas{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"})) unless (kube_deployment_spec_paused{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} == 1)
+    kube_deployment_status_replicas_available{deployment="greatservice",namespace="st-great"} 3
+
+# deployment paused
+clear
+load 1m
+    kube_deployment_spec_replicas{deployment="greatservice",namespace="st-great"} 5
+    kube_deployment_spec_paused{deployment="greatservice",namespace="st-great"} 1
+    kube_deployment_status_replicas_available{deployment="greatservice",namespace="st-great"} 3
+    kube_deployment_status_replicas_updated{deployment="other",namespace="st-great"} 5
+    kube_deployment_spec_replicas{deployment="other",namespace="st-great"} 5
+    kube_deployment_spec_paused{deployment="other",namespace="st-great"} 0
+
+eval instant at 0m ((kube_deployment_status_replicas_updated{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} != kube_deployment_spec_replicas{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"}) or (kube_deployment_status_replicas_available{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} != kube_deployment_spec_replicas{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"})) unless (kube_deployment_spec_paused{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} == 1)
+
+# service in ignored namespace has fewer replicas_updated than spec_replicas
+clear
+load 1m
+    kube_deployment_status_replicas_updated{deployment="greatservice",namespace="user-foobar"} 3
+    kube_deployment_spec_replicas{deployment="greatservice",namespace="user-footbar"} 5
+    kube_deployment_spec_paused{deployment="greatservice",namespace="user-foobar"} 0
+    kube_deployment_status_replicas_updated{deployment="other",namespace="user-foobar"} 5
+    kube_deployment_spec_replicas{deployment="other",namespace="user-foobar"} 5
+    kube_deployment_spec_paused{deployment="other",namespace="user-foobar"} 0
+
+eval instant at 0m ((kube_deployment_status_replicas_updated{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} != kube_deployment_spec_replicas{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"}) or (kube_deployment_status_replicas_available{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} != kube_deployment_spec_replicas{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"})) unless (kube_deployment_spec_paused{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} == 1)
+
+# service in staging has fewer replicas_available than spec_replicas
+clear
+load 1m
+    kube_deployment_spec_replicas{deployment="greatservice",namespace="user-foobar"} 5
+    kube_deployment_spec_paused{deployment="greatservice",namespace="user-foobar"} 0
+    kube_deployment_status_replicas_available{deployment="greatservice",namespace="user-foobar"} 3
+    kube_deployment_status_replicas_updated{deployment="other",namespace="user-foobar"} 5
+    kube_deployment_spec_replicas{deployment="other",namespace="user-foobar"} 5
+    kube_deployment_spec_paused{deployment="other",namespace="user-foobar"} 0
+
