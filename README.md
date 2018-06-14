@@ -21,6 +21,11 @@ e.g.,
     pet test*
     pet tests/*.yaml
 
+Writing Test Cases
+------------------
+
+Take a look at the sample testcase [here](https://github.com/kevinjqiu/pet/tree/master/tests/testcase.yaml).
+
 Attribution
 -----------
 
