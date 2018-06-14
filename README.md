@@ -1,14 +1,15 @@
 ```
-                                 _       _            _
- _ __  _ __ ___  _ __ ___   __ _| |     | |_ ___  ___| |_
-| '_ \| '__/ _ \| '_ ` _ \ / _` | |_____| __/ _ \/ __| __|
-| |_) | | | (_) | | | | | | (_| | |_____| ||  __/\__ \ |_
-| .__/|_|  \___/|_| |_| |_|\__, |_|      \__\___||___/\__|
-|_|                           |_|
-
+            _
+ _ __   ___| |_
+| '_ \ / _ \ __|
+| |_) |  __/ |_
+| .__/ \___|\__|
+|_|
 ```
 
-Utility for unit testing Prometheus Query and Rules
+PET - Prometheus Expression Testing framework
+
+A utility for unit testing Prometheus Query and Rules
 
 Usage
 -----
