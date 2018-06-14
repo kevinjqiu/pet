@@ -13,22 +13,12 @@ Utility for unit testing Prometheus Query and Rules
 Usage
 -----
 
-    promql-test [testfiles]
+    pet [testfiles]
 
 e.g.,
 
-    promql-test test*
-    promql-test tests/*
-
-
-Test File
----------
-
-Test file uses the Prometheus internal test file DSL.
-
-For a tutorial, see [here](https://github.com/m-lab/prometheus-support/blob/master/cmd/query_tester/README.md)
-
-For sample test files, see [here](https://github.com/prometheus/prometheus/blob/master/promql/testdata/)
+    pet test*
+    pet tests/*.yaml
 
 Attribution
 -----------
