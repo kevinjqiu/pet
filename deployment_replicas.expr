@@ -1,8 +1,1 @@
-((
-  kube_deployment_status_replicas_updated{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} != kube_deployment_spec_replicas{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"}
-)
-or
-(
-  kube_deployment_status_replicas_available{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} != kube_deployment_spec_replicas{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"}
-))
-unless (kube_deployment_spec_paused{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} == 1)
+((kube_deployment_status_replicas_updated{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} != kube_deployment_spec_replicas{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"}) or (kube_deployment_status_replicas_available{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} != kube_deployment_spec_replicas{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"})) unless (kube_deployment_spec_paused{namespace=~"st-.+|prd-.+|sre-.+|kube-system|tectonic-system"} == 1)

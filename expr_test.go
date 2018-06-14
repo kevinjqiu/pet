@@ -87,6 +87,7 @@ func (pqltc PromQLExprTestCase) generateCommands() (string, error) {
 		for _, expectedMetric := range assertion.Expected {
 			lines = append(lines, fmt.Sprintf("    %s", expectedMetric))
 		}
+		lines = append(lines, "")
 	}
 
 	return strings.Join(lines, "\n"), nil
@@ -97,11 +98,19 @@ func (pqltc PromQLExprTestCase) Run() error {
 	if err != nil {
 		return err
 	}
+	fmt.Printf("   %s.....", pqltc.Description)
 	pt, err := promql.NewTest(StubTestCase{}, commands)
 	if err != nil {
+		fmt.Printf("ERROR\n")
 		log.Fatal(err)
 	}
-	return pt.Run()
+	testErr := pt.Run()
+	if testErr != nil {
+		fmt.Printf("FAIL\n")
+		return testErr
+	}
+	fmt.Printf("OK\n")
+	return nil
 }
 
 type PromQLExprTest struct {
@@ -114,7 +123,7 @@ func (pqltest PromQLExprTest) Run() error {
 
 	for _, tc := range pqltest.TestCases {
 		newErr := tc.Run()
-		if err != nil {
+		if newErr != nil {
 			err = multierror.Append(err, newErr)
 		}
 	}
@@ -154,7 +163,7 @@ func TestPromQLExpression(t *testing.T) {
 
 	var testErrs error
 	for _, file := range filePaths {
-		fmt.Printf("Testing %v...", file)
+		fmt.Printf("%v\n", file)
 
 		testCase, err := parsePromQLTestCase(file)
 		if err != nil {

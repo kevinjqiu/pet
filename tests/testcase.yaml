@@ -25,3 +25,35 @@ testCases:
           expr:
             fromFile: deployment_replicas.expr
         expected: []
+  - description: service in staging has fewer replicas_updated than spec_replicas
+    fixtures:
+      1m:
+        - kube_deployment_status_replicas_updated{deployment="greatservice",namespace="st-great"} 3
+        - kube_deployment_spec_replicas{deployment="greatservice",namespace="st-great"} 5
+        - kube_deployment_spec_paused{deployment="greatservice",namespace="st-great"} 0
+        - kube_deployment_status_replicas_updated{deployment="other",namespace="st-great"} 5
+        - kube_deployment_spec_replicas{deployment="other",namespace="st-great"} 5
+        - kube_deployment_spec_paused{deployment="other",namespace="st-great"} 0
+    assertions:
+      - eval:
+          at: 0m
+          expr:
+            fromFile: deployment_replicas.expr
+        expected:
+          - kube_deployment_status_replicas_updated{deployment="greatservice",namespace="st-great"} 3
+  - description: service in staging has fewer replicas_available than spec_replicas
+    fixtures:
+      1m:
+        - kube_deployment_status_replicas_updated{deployment="greatservice",namespace="st-great"} 3
+        - kube_deployment_spec_replicas{deployment="greatservice",namespace="st-great"} 5
+        - kube_deployment_spec_paused{deployment="greatservice",namespace="st-great"} 0
+        - kube_deployment_status_replicas_updated{deployment="other",namespace="st-great"} 5
+        - kube_deployment_spec_replicas{deployment="other",namespace="st-great"} 5
+        - kube_deployment_spec_paused{deployment="other",namespace="st-great"} 0
+    assertions:
+      - eval:
+          at: 0m
+          expr:
+            fromFile: deployment_replicas.expr
+        expected:
+          - kube_deployment_status_replicas_available{deployment="greatservice",namespace="st-great"} 4
